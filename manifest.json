@@ -1,0 +1,21 @@
+{
+  "name": "Guía de Perfusión Pediátrica",
+  "short_name": "GuíaPerfusión",
+  "description": "Calculadora de dosis para perfusiones intravenosas en pediatría.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "https://placehold.co/192x192/4338ca/ffffff?text=Guia",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://placehold.co/512x512/4338ca/ffffff?text=Guia",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

@@ -4,77 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guía de Perfusión Pediátrica</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#111827"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .card {
-            background-color: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            padding: 1.5rem;
-            transition: all 0.3s ease-in-out;
-        }
-        .input-group {
-            position: relative;
-        }
-        .input-unit {
-            position: absolute;
-            right: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6b7280;
-            pointer-events: none;
-        }
-        input[type="number"] {
-            padding-right: 3rem;
-        }
-        .result-display {
-            background-color: #f0fdf4; /* green-50 */
-            border: 1px solid #bbf7d0; /* green-200 */
-            color: #166534; /* green-800 */
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            text-align: center;
-        }
-        .result-value {
-            font-size: 2.25rem; /* text-4xl */
-            font-weight: 700; /* font-bold */
-            line-height: 1;
-        }
-        .result-unit {
-            font-size: 1.125rem; /* text-xl */
-            font-weight: 500; /* font-medium */
-            margin-left: 0.5rem;
-        }
-        .drug-info {
-            background-color: #f3f4f6; /* gray-100 */
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-        #drug-suggestions {
-            position: absolute;
-            background-color: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            width: 100%;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 10;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        }
-        .suggestion-item {
-            padding: 0.75rem 1rem;
-            cursor: pointer;
-        }
-        .suggestion-item:hover {
-            background-color: #f3f4f6;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .card { background-color: white; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); padding: 1.5rem; transition: all 0.3s ease-in-out; }
+        .input-group { position: relative; }
+        .input-unit { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: #6b7280; pointer-events: none; }
+        input[type="number"] { padding-right: 3rem; }
+        .result-display { background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 1.5rem; border-radius: 0.75rem; text-align: center; }
+        .result-value { font-size: 2.25rem; font-weight: 700; line-height: 1; }
+        .result-unit { font-size: 1.125rem; font-weight: 500; margin-left: 0.5rem; }
+        .drug-info { background-color: #f3f4f6; border-radius: 0.75rem; padding: 1rem; margin-top: 1rem; }
+        #drug-suggestions { position: absolute; background-color: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; width: 100%; max-height: 200px; overflow-y: auto; z-index: 10; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .suggestion-item { padding: 0.75rem 1rem; cursor: pointer; }
+        .suggestion-item:hover { background-color: #f3f4f6; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 flex items-center justify-center min-h-screen p-4">
@@ -140,7 +88,6 @@
 
     <script>
         // --- BASE DE DATOS DE FÁRMACOS ---
-        // Todas las diluciones están estandarizadas para un volumen final de 50 ml.
         const drugs = [
             { name: "Adrenalina", preparation: "0.5mg en 50ml SG5%", concentration: 10, doseUnit: "mcg/kg/min", doseRange: "0.05 - 1" },
             { name: "Amiodarona", preparation: "60mg en 50ml SG5%", concentration: 1200, doseUnit: "mg/kg/h", doseRange: "0.01 - 0.03" },
@@ -170,12 +117,10 @@
             { name: "Rocuronio", preparation: "250mg en 50ml SF", concentration: 5000, doseUnit: "mcg/kg/min", doseRange: "5 - 15" },
             { name: "Urapidil", preparation: "50mg en 50ml SF", concentration: 1000, doseUnit: "mg/kg/h", doseRange: "0.5 - 2" },
             { name: "Vecuronio", preparation: "20mg en 50ml SF", concentration: 400, doseUnit: "mcg/kg/min", doseRange: "0.8 - 1.7" },
-        ].sort((a, b) => a.name.localeCompare(b.name)); // Ordenar alfabéticamente
+        ].sort((a, b) => a.name.localeCompare(b.name));
 
-        // --- ESTADO DE LA APLICACIÓN ---
+        // --- LÓGICA DE LA APP (sin cambios) ---
         let selectedDrug = null;
-
-        // --- ELEMENTOS DEL DOM ---
         const weightInput = document.getElementById('weight');
         const drugSearchInput = document.getElementById('drug-search');
         const drugSuggestionsDiv = document.getElementById('drug-suggestions');
@@ -183,8 +128,6 @@
         const doseUnitSpan = document.getElementById('dose-unit');
         const resultDisplay = document.getElementById('result').querySelector('.result-value');
         const drugInfoP = document.getElementById('drug-info');
-
-        // --- LÓGICA DE LA APLICACIÓN ---
 
         function showSuggestions(matches) {
             drugSuggestionsDiv.innerHTML = '';
@@ -255,7 +198,6 @@
                     infusionRate = (dose * weight) / concentration;
                     break;
                 case 'mg/kg/h':
-                    // Para el magnesio, la concentración está en mg/ml, no mcg/ml
                     if (selectedDrug.name.includes("Magnesio")) {
                         infusionRate = (dose * weight) / concentration;
                     } else {
@@ -278,10 +220,8 @@
             calculate();
         }
 
-        // --- EVENT LISTENERS ---
         weightInput.addEventListener('input', calculate);
         doseInput.addEventListener('input', calculate);
-
         drugSearchInput.addEventListener('input', () => {
             const query = drugSearchInput.value.toLowerCase();
             if (query.length === 0) {
@@ -293,13 +233,23 @@
             showSuggestions(matches);
         });
         
-        // Ocultar sugerencias si se hace clic fuera
         document.addEventListener('click', (e) => {
             if (!drugSearchInput.contains(e.target) && !drugSuggestionsDiv.contains(e.target)) {
                 drugSuggestionsDiv.classList.add('hidden');
             }
         });
 
+        // --- REGISTRO DEL SERVICE WORKER ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Usamos una ruta relativa para que funcione en GitHub Pages
+                navigator.serviceWorker.register('./service-worker.js').then(registration => {
+                    console.log('ServiceWorker registrado con éxito: ', registration.scope);
+                }, err => {
+                    console.log('Fallo en el registro del ServiceWorker: ', err);
+                });
+            });
+        }
     </script>
 </body>
 </html>
