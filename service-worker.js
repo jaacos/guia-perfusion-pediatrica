@@ -1,4 +1,5 @@
-// Define un nombre para la caché actual.
+const CACHE_VERSION = 'v1.2'; // Cambia este número para que sea nuevo, ej: 'v1.2' o '2025-07-23-2'
+// El resto de tu código service-worker.js sigue aquí// Define un nombre para la caché actual.
 const CACHE_NAME = 'guia-perfusion-pediatrica-v2'; // Incrementamos la versión para forzar la actualización
 
 // Lista de archivos necesarios para que la aplicación funcione offline.
