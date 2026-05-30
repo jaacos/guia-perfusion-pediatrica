@@ -3,261 +3,803 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guía de Perfusión Pediátrica</title>
+    <title>Perfusión Pediátrica</title>
+
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
-    <!-- Meta tags para PWA en iOS -->
+    <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Guía Perfusión Pediátrica">
-    <meta name="theme-color" content="#111827"/>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Iconos personalizados: para PWA iOS y favicon -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Perfusión Ped.">
     <link rel="apple-touch-icon" href="icons/maskable_icon_x192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/maskable_icon_x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icons/maskable_icon_x512.png">
+
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .card { background-color: white; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); padding: 1.5rem; transition: all 0.3s ease-in-out; }
-        .input-group { position: relative; }
-        .input-unit { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: #6b7280; pointer-events: none; }
-        input[type="number"] { padding-right: 3rem; }
-        .result-display { background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 1.5rem; border-radius: 0.75rem; text-align: center; }
-        .result-value { font-size: 2.25rem; font-weight: 700; line-height: 1; }
-        .result-unit { font-size: 1.125rem; font-weight: 500; margin-left: 0.5rem; }
-        .drug-info { background-color: #f3f4f6; border-radius: 0.75rem; padding: 1rem; margin-top: 1rem; }
-        #drug-suggestions { position: absolute; background-color: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; width: 100%; max-height: 200px; overflow-y: auto; z-index: 10; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
-        .suggestion-item { padding: 0.75rem 1rem; cursor: pointer; }
-        .suggestion-item:hover { background-color: #f3f4f6; }
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:        #0f172a;
+            --surface:   #1e293b;
+            --surface2:  #273549;
+            --border:    #334155;
+            --text:      #f1f5f9;
+            --text-muted:#94a3b8;
+            --accent:    #38bdf8;
+            --ok-bg:     rgba(34,197,94,0.12);
+            --ok-border: #22c55e;
+            --warn-bg:   rgba(245,158,11,0.12);
+            --warn-border:#f59e0b;
+            --danger-bg: rgba(239,68,68,0.12);
+            --danger-border:#ef4444;
+            --neutral-bg:  #273549;
+            --neutral-border:#334155;
+            --radius:    14px;
+            --radius-sm: 8px;
+        }
+
+        html, body {
+            min-height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 1rem 2.5rem;
+        }
+
+        /* ===== LAYOUT ===== */
+        .app {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* ===== HEADER ===== */
+        header { text-align: center; padding: 0.5rem 0; }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+
+        header h1 span { color: var(--accent); }
+
+        header p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+        }
+
+        /* ===== FIELDS ===== */
+        .field { margin-bottom: 1.1rem; }
+        .field:last-child { margin-bottom: 0; }
+
+        label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--text-muted);
+            margin-bottom: 0.45rem;
+        }
+
+        .input-wrap { position: relative; display: flex; align-items: center; }
+
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            background: var(--surface2);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 1rem;
+            padding: 0.7rem 4.5rem 0.7rem 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+            -webkit-appearance: none;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus { border-color: var(--accent); }
+
+        input::placeholder { color: var(--text-muted); }
+
+        input:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .unit-badge {
+            position: absolute;
+            right: 0.75rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            pointer-events: none;
+            white-space: nowrap;
+            max-width: 4rem;
+            text-align: right;
+        }
+
+        /* ===== AUTOCOMPLETE ===== */
+        .autocomplete-wrap { position: relative; }
+
+        #drug-suggestions {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0; right: 0;
+            background: var(--surface2);
+            border: 1.5px solid var(--accent);
+            border-radius: var(--radius-sm);
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.55);
+        }
+
+        #drug-suggestions.open { display: block; }
+
+        .suggestion-item {
+            padding: 0.6rem 0.9rem;
+            cursor: pointer;
+            font-size: 0.92rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.12s;
+        }
+
+        .suggestion-item:last-child { border-bottom: none; }
+
+        .suggestion-item:hover { background: var(--border); }
+
+        .suggestion-trade {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: 0.4rem;
+        }
+
+        /* ===== DIVIDER ===== */
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1.25rem 0;
+        }
+
+        /* ===== RESULT ===== */
+        #result-box {
+            border-radius: var(--radius-sm);
+            padding: 1.25rem 1rem;
+            text-align: center;
+            transition: background 0.25s, border-color 0.25s;
+            background: var(--neutral-bg);
+            border: 1.5px solid var(--neutral-border);
+        }
+
+        #result-box.ok      { background: var(--ok-bg);     border-color: var(--ok-border); }
+        #result-box.warn    { background: var(--warn-bg);   border-color: var(--warn-border); }
+        #result-box.danger  { background: var(--danger-bg); border-color: var(--danger-border); }
+
+        .result-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .result-value {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--text);
+            letter-spacing: -0.03em;
+        }
+
+        .result-unit {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-left: 0.3rem;
+        }
+
+        #range-alert {
+            display: none;
+            margin-top: 0.6rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        #range-alert.show { display: block; }
+        #range-alert.above { color: #ef4444; }
+        #range-alert.below { color: #f59e0b; }
+
+        /* ===== DRUG INFO ===== */
+        #drug-info {
+            margin-top: 1rem;
+            background: var(--surface2);
+            border-radius: var(--radius-sm);
+            padding: 0.9rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-row:last-child { border-bottom: none; }
+
+        .info-key {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+            margin-right: 0.5rem;
+        }
+
+        .info-val {
+            color: var(--text);
+            font-size: 0.88rem;
+            text-align: right;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            text-align: center;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        footer strong { color: #f59e0b; }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 flex items-center justify-center min-h-screen p-4">
+<body>
 
-    <div class="w-full max-w-md mx-auto">
-        <header class="text-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Guía de Perfusión Pediátrica</h1>
-            <p class="text-gray-600 mt-1">Calculadora para perfusores de 50ml</p>
-        </header>
+<div class="app">
 
-        <main class="card">
-            <!-- Controles de Entrada -->
-            <div class="space-y-4">
-                <!-- Peso del Paciente -->
-                <div>
-                    <label for="weight" class="block text-sm font-medium text-gray-700 mb-1">Peso del Paciente</label>
-                    <div class="input-group">
-                        <input type="number" id="weight" placeholder="Ej: 12.5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        <span class="input-unit font-semibold">kg</span>
-                    </div>
-                </div>
+    <header>
+        <h1>Perfusión <span>Pediátrica</span></h1>
+        <p>Calculadora para perfusores de 50 ml</p>
+    </header>
 
-                <!-- Búsqueda de Fármaco -->
-                <div class="relative">
-                    <label for="drug-search" class="block text-sm font-medium text-gray-700 mb-1">Fármaco</label>
-                    <input type="text" id="drug-search" placeholder="Escriba para buscar..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                    <div id="drug-suggestions" class="hidden"></div>
-                </div>
+    <div class="card">
 
-                <!-- Dosis Deseada -->
-                <div>
-                    <label for="dose" class="block text-sm font-medium text-gray-700 mb-1">Dosis Deseada</label>
-                    <div class="input-group">
-                        <input type="number" id="dose" placeholder="Seleccione un fármaco" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" disabled>
-                        <span id="dose-unit" class="input-unit font-semibold">...</span>
-                    </div>
-                </div>
+        <div class="field">
+            <label for="weight">Peso del paciente</label>
+            <div class="input-wrap">
+                <input type="number" id="weight" placeholder="Ej: 12.5" min="0.5" max="120" step="0.1">
+                <span class="unit-badge">kg</span>
             </div>
+        </div>
 
-            <!-- Separador -->
-            <hr class="my-6 border-gray-200">
+        <div class="field">
+            <label for="drug-search">Fármaco</label>
+            <div class="autocomplete-wrap">
+                <input type="text" id="drug-search" placeholder="Escriba para buscar..." autocomplete="off">
+                <div id="drug-suggestions"></div>
+            </div>
+        </div>
 
-            <!-- Resultados -->
+        <div class="field">
+            <label for="dose">Dosis deseada</label>
+            <div class="input-wrap">
+                <input type="number" id="dose" placeholder="Seleccione un fármaco" disabled min="0" step="any">
+                <span id="dose-unit" class="unit-badge">—</span>
+            </div>
+        </div>
+
+        <hr>
+
+        <div id="result-box">
+            <div class="result-label">Ritmo de perfusión</div>
             <div>
-                <h2 class="text-lg font-semibold text-center text-gray-800 mb-3">Ritmo de Perfusión</h2>
-                <div id="result" class="result-display">
-                    <span class="result-value">0.00</span>
-                    <span class="result-unit">ml/h</span>
-                </div>
-                <div id="drug-info" class="drug-info">
-                    <p class="text-sm text-gray-700 text-center">Busque y seleccione un fármaco para ver la preparación.</p>
-                </div>
+                <span class="result-value" id="result-val">—</span>
+                <span class="result-unit">ml/h</span>
             </div>
-        </main>
+            <div id="range-alert"></div>
+        </div>
 
-        <footer class="text-center mt-6">
-            <p class="text-xs text-gray-500">
-                <strong>Aviso:</strong> Esta herramienta es una ayuda y no reemplaza el juicio clínico. 
-                Verifique siempre los cálculos y las diluciones.
-            </p>
-        </footer>
+        <div id="drug-info">
+            <span>Busque y seleccione un fármaco para ver la preparación.</span>
+        </div>
+
     </div>
 
-    <script>
-        // --- BASE DE DATOS DE FÁRMACOS ---
-        const drugs = [
-            { name: "Adrenalina", preparation: "0.5mg en 50ml SG5%", concentration: 10, doseUnit: "mcg/kg/min", doseRange: "0.05 - 1" },
-            { name: "Amiodarona", preparation: "60mg en 50ml SG5%", concentration: 1200, doseUnit: "mg/kg/h", doseRange: "0.01 - 0.03" },
-            { name: "Atracurio", preparation: "50mg en 50ml SF", concentration: 1000, doseUnit: "mcg/kg/min", doseRange: "5 - 10" },
-            { name: "Cisatracurio", preparation: "50mg en 50ml SF", concentration: 1000, doseUnit: "mcg/kg/min", doseRange: "0.5 - 2" },
-            { name: "Dexmedetomidina", preparation: "200mcg en 50ml SF", concentration: 4, doseUnit: "mcg/kg/h", doseRange: "0.2 - 1.5" },
-            { name: "Dobutamina", preparation: "50mg en 50ml SG5%", concentration: 1000, doseUnit: "mcg/kg/min", doseRange: "2 - 20" },
-            { name: "Dopamina", preparation: "40mg en 50ml SG5%", concentration: 800, doseUnit: "mcg/kg/min", doseRange: "2 - 20" },
-            { name: "Esmolol", preparation: "500mg en 50ml SF", concentration: 10000, doseUnit: "mcg/kg/min", doseRange: "50 - 300" },
-            { name: "Fentanilo", preparation: "500mcg en 50ml SF", concentration: 10, doseUnit: "mcg/kg/h", doseRange: "1 - 5" },
-            { name: "Heparina Sódica", preparation: "5000UI en 50ml SF", concentration: 100, doseUnit: "UI/kg/h", doseRange: "10 - 25" },
-            { name: "Insulina Rápida", preparation: "50UI en 50ml SF", concentration: 1, doseUnit: "UI/kg/h", doseRange: "0.05 - 1" },
-            { name: "Isoproterenol", preparation: "0.2mg en 50ml SG5%", concentration: 4, doseUnit: "mcg/kg/min", doseRange: "0.05 - 2" },
-            { name: "Ketamina", preparation: "50mg en 50ml SF", concentration: 1000, doseUnit: "mg/kg/h", doseRange: "0.1 - 0.5" },
-            { name: "Labetalol", preparation: "50mg en 50ml SF", concentration: 1000, doseUnit: "mg/kg/h", doseRange: "0.25 - 3" },
-            { name: "Levosimendan", preparation: "1.25mg en 50ml SG5%", concentration: 25, doseUnit: "mcg/kg/min", doseRange: "0.05 - 0.2" },
-            { name: "Lidocaína 2%", preparation: "100mg en 50ml SG5%", concentration: 2000, doseUnit: "mcg/kg/min", doseRange: "20 - 50" },
-            { name: "Magnesio (Sulfato)", preparation: "2.5g en 50ml SF", concentration: 50, concentrationUnit: "mg/ml", doseUnit: "mg/kg/h", doseRange: "25 - 75" },
-            { name: "Midazolam", preparation: "50mg en 50ml SF", concentration: 1000, doseUnit: "mg/kg/h", doseRange: "0.06 - 0.6" },
-            { name: "Milrinona", preparation: "10mg en 50ml SG5%", concentration: 200, doseUnit: "mcg/kg/min", doseRange: "0.25 - 1" },
-            { name: "Nitroglicerina", preparation: "10mg en 50ml SG5%", concentration: 200, doseUnit: "mcg/kg/min", doseRange: "0.5 - 10" },
-            { name: "Nitroprusiato", preparation: "10mg en 50ml SG5%", concentration: 200, doseUnit: "mcg/kg/min", doseRange: "0.3 - 10" },
-            { name: "Noradrenalina", preparation: "1mg en 50ml SG5%", concentration: 20, doseUnit: "mcg/kg/min", doseRange: "0.05 - 1" },
-            { name: "Propofol 1%", preparation: "Directo (10mg/ml). Cargar 50ml", concentration: 10000, doseUnit: "mg/kg/h", doseRange: "1 - 6" },
-            { name: "Propofol 2%", preparation: "Directo (20mg/ml). Cargar 50ml", concentration: 20000, doseUnit: "mg/kg/h", doseRange: "1 - 6" },
-            { name: "Remifentanilo", preparation: "1mg en 50ml SF", concentration: 20, doseUnit: "mcg/kg/min", doseRange: "0.025 - 0.2" },
-            { name: "Rocuronio", preparation: "250mg en 50ml SF", concentration: 5000, doseUnit: "mcg/kg/min", doseRange: "5 - 15" },
-            { name: "Urapidil", preparation: "50mg en 50ml SF", concentration: 1000, doseUnit: "mg/kg/h", doseRange: "0.5 - 2" },
-            { name: "Vecuronio", preparation: "20mg en 50ml SF", concentration: 400, doseUnit: "mcg/kg/min", doseRange: "0.8 - 1.7" },
-        ].sort((a, b) => a.name.localeCompare(b.name));
+    <footer>
+        <strong>⚠ Aviso:</strong> Herramienta de apoyo. No sustituye el juicio clínico.<br>
+        Verifique siempre los cálculos y las diluciones antes de administrar.
+    </footer>
 
-        // --- LÓGICA DE LA APP (sin cambios) ---
-        let selectedDrug = null;
-        const weightInput = document.getElementById('weight');
-        const drugSearchInput = document.getElementById('drug-search');
-        const drugSuggestionsDiv = document.getElementById('drug-suggestions');
-        const doseInput = document.getElementById('dose');
-        const doseUnitSpan = document.getElementById('dose-unit');
-        const resultDisplay = document.getElementById('result').querySelector('.result-value');
-        const drugInfoP = document.getElementById('drug-info');
+</div>
 
-        function showSuggestions(matches) {
-            drugSuggestionsDiv.innerHTML = '';
-            if (matches.length > 0) {
-                matches.forEach(drug => {
-                    const item = document.createElement('div');
-                    item.className = 'suggestion-item';
-                    item.textContent = drug.name;
-                    item.addEventListener('click', () => selectDrug(drug));
-                    drugSuggestionsDiv.appendChild(item);
-                });
-                drugSuggestionsDiv.classList.remove('hidden');
-            } else {
-                drugSuggestionsDiv.classList.add('hidden');
-            }
-        }
+<script>
+// ============================================================
+//  BASE DE DATOS
+//  concentration: mcg/ml  salvo concUnit='mg/ml' o 'UI/ml'
+//  doseMin/doseMax: en la misma unidad que doseUnit
+// ============================================================
+const drugs = [
+    {
+        name: "Ácido Valproico",
+        trade: "Depakine",
+        preparation: "200 mg en 50 ml SF o SG5%",
+        concentration: 4000,   // mcg/ml  (200mg/50ml = 4mg/ml = 4000mcg/ml)
+        concUnit: "mcg/ml",
+        doseUnit: "mg/kg/h",
+        doseMin: 1, doseMax: 5
+    },
+    {
+        name: "Adrenalina",
+        trade: "Genérico (B. Braun)",
+        preparation: "0.5 mg en 50 ml SG5%",
+        concentration: 10,     // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 0.05, doseMax: 1
+    },
+    {
+        name: "Amiodarona",
+        trade: "Trangorex",
+        preparation: "60 mg en 50 ml SG5%",
+        concentration: 1200,   // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 5, doseMax: 15
+    },
+    {
+        name: "Atracurio",
+        trade: "Tracrium",
+        preparation: "50 mg en 50 ml SF",
+        concentration: 1000,   // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 5, doseMax: 10
+    },
+    {
+        name: "Cisatracurio",
+        trade: "Nimbex",
+        preparation: "50 mg en 50 ml SF",
+        concentration: 1000,   // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 0.5, doseMax: 2
+    },
+    {
+        name: "Clonidina",
+        trade: "Catapresan",
+        preparation: "750 mcg en 50 ml SF",
+        concentration: 15,     // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/h",
+        doseMin: 0.1, doseMax: 2
+    },
+    {
+        name: "Cloruro Mórfico",
+        trade: "Genérico",
+        preparation: "50 mg en 50 ml SF o SG5%",
+        concentration: 1000,   // mcg/ml  (50mg/50ml = 1mg/ml = 1000mcg/ml)
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/h",
+        doseMin: 10, doseMax: 40
+    },
+    {
+        name: "Dexmedetomidina",
+        trade: "Dexdor",
+        preparation: "200 mcg en 50 ml SF",
+        concentration: 4,      // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/h",
+        doseMin: 0.2, doseMax: 1.5
+    },
+    {
+        name: "Dobutamina",
+        trade: "Genérico",
+        preparation: "50 mg en 50 ml SG5%",
+        concentration: 1000,   // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 2, doseMax: 20
+    },
+    {
+        name: "Dopamina",
+        trade: "Genérico",
+        preparation: "40 mg en 50 ml SG5%",
+        concentration: 800,    // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 2, doseMax: 20
+    },
+    {
+        name: "Esmolol",
+        trade: "Brevibloc",
+        preparation: "500 mg en 50 ml SF",
+        concentration: 10000,  // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 100, doseMax: 500
+    },
+    {
+        name: "Fentanilo",
+        trade: "Fentanest",
+        preparation: "500 mcg en 50 ml SF",
+        concentration: 10,     // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/h",
+        doseMin: 1, doseMax: 2
+    },
+    {
+        name: "Heparina Sódica",
+        trade: "Genérico (Rovi/Hospira)",
+        preparation: "5000 UI en 50 ml SF",
+        concentration: 100,    // UI/ml
+        concUnit: "UI/ml",
+        doseUnit: "UI/kg/h",
+        doseMin: 10, doseMax: 25
+    },
+    {
+        name: "Insulina Rápida",
+        trade: "Actrapid",
+        preparation: "50 UI en 50 ml SF",
+        concentration: 1,      // UI/ml
+        concUnit: "UI/ml",
+        doseUnit: "UI/kg/h",
+        doseMin: 0.05, doseMax: 0.1
+    },
+    {
+        name: "Isoproterenol",
+        trade: "Aleudrina",
+        preparation: "0.2 mg en 50 ml SG5%",
+        concentration: 4,      // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 0.05, doseMax: 2
+    },
+    {
+        name: "Ketamina",
+        trade: "Ketolar",
+        preparation: "50 mg en 50 ml SF",
+        concentration: 1000,   // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mg/kg/h",
+        doseMin: 0.5, doseMax: 5
+    },
+    {
+        name: "Labetalol",
+        trade: "Trandate",
+        preparation: "50 mg en 50 ml SF",
+        concentration: 1000,   // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mg/kg/h",
+        doseMin: 0.25, doseMax: 3
+    },
+    {
+        name: "Levosimendan",
+        trade: "Simdax",
+        preparation: "1.25 mg en 50 ml SG5%",
+        concentration: 25,     // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 0.05, doseMax: 0.2
+    },
+    {
+        name: "Lidocaína 2%",
+        trade: "Genérico",
+        preparation: "100 mg en 50 ml SG5%",
+        concentration: 2000,   // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 20, doseMax: 50
+    },
+    {
+        name: "Magnesio (Sulfato)",
+        trade: "Sulmetin",
+        preparation: "2.5 g en 50 ml SF",
+        concentration: 50,     // mg/ml  ← excepción: concUnit mg/ml
+        concUnit: "mg/ml",
+        doseUnit: "mg/kg/h",
+        doseMin: 25, doseMax: 75
+    },
+    {
+        name: "Midazolam",
+        trade: "Dormicum",
+        preparation: "50 mg en 50 ml SF",
+        concentration: 1000,   // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mg/kg/h",
+        doseMin: 0.06, doseMax: 4
+    },
+    {
+        name: "Milrinona",
+        trade: "Corotrope",
+        preparation: "10 mg en 50 ml SG5%",
+        concentration: 200,    // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 0.25, doseMax: 1
+    },
+    {
+        name: "Nitroglicerina",
+        trade: "Solinitrina",
+        preparation: "10 mg en 50 ml SG5%",
+        concentration: 200,    // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 0.5, doseMax: 10
+    },
+    {
+        name: "Nitroprusiato",
+        trade: "Nitroprussiat",
+        preparation: "10 mg en 50 ml SG5%",
+        concentration: 200,    // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 0.3, doseMax: 10
+    },
+    {
+        name: "Noradrenalina",
+        trade: "Genérico (B. Braun)",
+        preparation: "1 mg en 50 ml SG5%",
+        concentration: 20,     // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 0.05, doseMax: 1
+    },
+    {
+        name: "Propofol 1%",
+        trade: "Diprivan / Genérico",
+        preparation: "Directo (10 mg/ml). Cargar 50 ml",
+        concentration: 10000,  // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mg/kg/h",
+        doseMin: 1, doseMax: 6
+    },
+    {
+        name: "Propofol 2%",
+        trade: "Diprivan / Genérico",
+        preparation: "Directo (20 mg/ml). Cargar 50 ml",
+        concentration: 20000,  // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mg/kg/h",
+        doseMin: 1, doseMax: 6
+    },
+    {
+        name: "Remifentanilo",
+        trade: "Ultiva",
+        preparation: "1 mg en 50 ml SF",
+        concentration: 20,     // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 0.025, doseMax: 0.2
+    },
+    {
+        name: "Rocuronio",
+        trade: "Esmeron",
+        preparation: "250 mg en 50 ml SF",
+        concentration: 5000,   // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 5, doseMax: 15
+    },
+    {
+        name: "Urapidil",
+        trade: "Elgadil",
+        preparation: "50 mg en 50 ml SF",
+        concentration: 1000,   // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mg/kg/h",
+        doseMin: 0.8, doseMax: 3.3
+    },
+    {
+        name: "Vecuronio",
+        trade: "Norcuron",
+        preparation: "20 mg en 50 ml SF",
+        concentration: 400,    // mcg/ml
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 0.8, doseMax: 1.7
+    },
+].sort((a, b) => a.name.localeCompare(b.name));
 
-        function selectDrug(drug) {
-            selectedDrug = drug;
-            drugSearchInput.value = drug.name;
-            drugSuggestionsDiv.classList.add('hidden');
-            updateDrugInfo();
-            calculate();
-        }
+// ============================================================
+//  FÓRMULAS
+//  mcg/kg/min → (dose × peso × 60) / conc_mcg/ml
+//  mcg/kg/h   → (dose × peso) / conc_mcg/ml
+//  mg/kg/h    → (dose × peso × 1000) / conc_mcg/ml
+//               si concUnit='mg/ml': (dose × peso) / conc_mg/ml
+//  UI/kg/h    → (dose × peso) / conc_UI/ml
+// ============================================================
+function calcRate(drug, weight, dose) {
+    const c = drug.concentration;
+    switch (drug.doseUnit) {
+        case 'mcg/kg/min': return (dose * weight * 60) / c;
+        case 'mcg/kg/h':   return (dose * weight) / c;
+        case 'mg/kg/h':
+            return drug.concUnit === 'mg/ml'
+                ? (dose * weight) / c
+                : (dose * weight * 1000) / c;
+        case 'UI/kg/h':    return (dose * weight) / c;
+        default:           return 0;
+    }
+}
 
-        function updateDrugInfo() {
-            if (!selectedDrug) {
-                doseInput.disabled = true;
-                doseInput.placeholder = 'Seleccione un fármaco';
-                doseUnitSpan.textContent = '...';
-                 drugInfoP.innerHTML = `<p class="text-sm text-gray-700 text-center">Busque y seleccione un fármaco para ver la preparación.</p>`;
-                return;
-            }
-            
-            doseInput.disabled = false;
-            doseUnitSpan.textContent = selectedDrug.doseUnit;
-            doseInput.placeholder = `Ej: ${selectedDrug.doseRange.split(' ')[0]}`;
-            drugInfoP.innerHTML = `
-                <p class="text-sm text-gray-800 font-semibold">Preparación (en jeringa de 50ml):</p>
-                <p class="text-sm text-gray-600">${selectedDrug.preparation}</p>
-                <p class="text-sm text-gray-800 font-semibold mt-2">Rango de dosis habitual:</p>
-                <p class="text-sm text-gray-600">${selectedDrug.doseRange} ${selectedDrug.doseUnit}</p>
-            `;
-        }
+// ============================================================
+//  DOM
+// ============================================================
+const weightInput    = document.getElementById('weight');
+const drugSearchInput= document.getElementById('drug-search');
+const suggestionsDiv = document.getElementById('drug-suggestions');
+const doseInput      = document.getElementById('dose');
+const doseUnitSpan   = document.getElementById('dose-unit');
+const resultBox      = document.getElementById('result-box');
+const resultVal      = document.getElementById('result-val');
+const rangeAlert     = document.getElementById('range-alert');
+const drugInfoDiv    = document.getElementById('drug-info');
 
-        function calculate() {
-            if (!selectedDrug) {
-                resultDisplay.textContent = '0.00';
-                return;
-            }
+let selectedDrug = null;
 
-            const weight = parseFloat(weightInput.value);
-            const dose = parseFloat(doseInput.value);
+// ============================================================
+//  AUTOCOMPLETE
+// ============================================================
+drugSearchInput.addEventListener('input', () => {
+    const q = drugSearchInput.value.trim().toLowerCase();
+    if (!q) { hideSuggestions(); resetDrug(); return; }
 
-            if (isNaN(weight) || isNaN(dose) || weight <= 0 || dose < 0) {
-                resultDisplay.textContent = '0.00';
-                return;
-            }
+    const matches = drugs.filter(d =>
+        d.name.toLowerCase().includes(q) ||
+        d.trade.toLowerCase().includes(q)
+    );
 
-            let infusionRate = 0;
-            const concentration = selectedDrug.concentration;
+    if (!matches.length) { hideSuggestions(); return; }
 
-            switch (selectedDrug.doseUnit) {
-                case 'mcg/kg/min':
-                    infusionRate = (dose * weight * 60) / concentration;
-                    break;
-                case 'mcg/kg/h':
-                    infusionRate = (dose * weight) / concentration;
-                    break;
-                case 'mg/kg/h':
-                    if (selectedDrug.name.includes("Magnesio")) {
-                        infusionRate = (dose * weight) / concentration;
-                    } else {
-                        infusionRate = (dose * 1000 * weight) / concentration;
-                    }
-                    break;
-                case 'UI/kg/h':
-                    infusionRate = (dose * weight) / concentration;
-                    break;
-            }
+    suggestionsDiv.innerHTML = '';
+    matches.forEach(drug => {
+        const item = document.createElement('div');
+        item.className = 'suggestion-item';
+        item.innerHTML = `${drug.name}<span class="suggestion-trade">${drug.trade}</span>`;
+        item.addEventListener('click', () => selectDrug(drug));
+        suggestionsDiv.appendChild(item);
+    });
+    suggestionsDiv.classList.add('open');
+});
 
-            resultDisplay.textContent = infusionRate.toFixed(2);
-        }
-        
-        function reset() {
-            selectedDrug = null;
-            drugSearchInput.value = '';
-            doseInput.value = '';
-            updateDrugInfo();
-            calculate();
-        }
+document.addEventListener('click', e => {
+    if (!drugSearchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+        hideSuggestions();
+    }
+});
 
-        weightInput.addEventListener('input', calculate);
-        doseInput.addEventListener('input', calculate);
-        drugSearchInput.addEventListener('input', () => {
-            const query = drugSearchInput.value.toLowerCase();
-            if (query.length === 0) {
-                drugSuggestionsDiv.classList.add('hidden');
-                reset();
-                return;
-            }
-            const matches = drugs.filter(drug => drug.name.toLowerCase().includes(query));
-            showSuggestions(matches);
-        });
-        
-        document.addEventListener('click', (e) => {
-            if (!drugSearchInput.contains(e.target) && !drugSuggestionsDiv.contains(e.target)) {
-                drugSuggestionsDiv.classList.add('hidden');
-            }
-        });
+function hideSuggestions() { suggestionsDiv.classList.remove('open'); }
 
-        // --- REGISTRO DEL SERVICE WORKER ---
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                // Usamos una ruta relativa para que funcione en GitHub Pages
-                navigator.serviceWorker.register('./service-worker.js').then(registration => {
-                    console.log('ServiceWorker registrado con éxito: ', registration.scope);
-                }, err => {
-                    console.log('Fallo en el registro del ServiceWorker: ', err);
-                });
-            });
-        }
-    </script>
+function selectDrug(drug) {
+    selectedDrug = drug;
+    drugSearchInput.value = drug.name;
+    hideSuggestions();
+
+    doseInput.disabled = false;
+    doseInput.value = '';
+    doseInput.placeholder = `${drug.doseMin} – ${drug.doseMax}`;
+    doseUnitSpan.textContent = drug.doseUnit;
+
+    drugInfoDiv.innerHTML = `
+        <div class="info-row">
+            <span class="info-key">Nombre comercial</span>
+            <span class="info-val">${drug.trade}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-key">Preparación</span>
+            <span class="info-val">${drug.preparation}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-key">Concentración</span>
+            <span class="info-val">${drug.concentration} ${drug.concUnit}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-key">Rango habitual</span>
+            <span class="info-val">${drug.doseMin} – ${drug.doseMax} ${drug.doseUnit}</span>
+        </div>
+    `;
+
+    calculate();
+}
+
+function resetDrug() {
+    selectedDrug = null;
+    doseInput.disabled = true;
+    doseInput.value = '';
+    doseInput.placeholder = 'Seleccione un fármaco';
+    doseUnitSpan.textContent = '—';
+    drugInfoDiv.innerHTML = '<span>Busque y seleccione un fármaco para ver la preparación.</span>';
+    showNeutral();
+}
+
+// ============================================================
+//  CÁLCULO
+// ============================================================
+function calculate() {
+    if (!selectedDrug) { showNeutral(); return; }
+
+    const weight = parseFloat(weightInput.value);
+    const dose   = parseFloat(doseInput.value);
+
+    if (isNaN(weight) || weight <= 0 || isNaN(dose) || dose < 0) {
+        showNeutral(); return;
+    }
+
+    const rate = calcRate(selectedDrug, weight, dose);
+    resultVal.textContent = rate.toFixed(2);
+
+    const above = dose > selectedDrug.doseMax;
+    const below = dose < selectedDrug.doseMin;
+
+    if (above) {
+        resultBox.className = 'danger';
+        rangeAlert.className = 'show above';
+        rangeAlert.textContent =
+            `⚠ Dosis por encima del rango (máx. ${selectedDrug.doseMax} ${selectedDrug.doseUnit})`;
+    } else if (below) {
+        resultBox.className = 'warn';
+        rangeAlert.className = 'show below';
+        rangeAlert.textContent =
+            `⚠ Dosis por debajo del rango (mín. ${selectedDrug.doseMin} ${selectedDrug.doseUnit})`;
+    } else {
+        resultBox.className = 'ok';
+        rangeAlert.className = '';
+        rangeAlert.textContent = '';
+    }
+}
+
+function showNeutral() {
+    resultVal.textContent = '—';
+    resultBox.className = '';
+    rangeAlert.className = '';
+    rangeAlert.textContent = '';
+}
+
+weightInput.addEventListener('input', calculate);
+doseInput.addEventListener('input', calculate);
+
+// ============================================================
+//  SERVICE WORKER
+// ============================================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+            .then(r => console.log('[SW] registrado:', r.scope))
+            .catch(e => console.warn('[SW] error:', e));
+    });
+}
+</script>
 </body>
 </html>
