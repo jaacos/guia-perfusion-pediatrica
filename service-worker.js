@@ -1,11 +1,16 @@
 // ============================================================
-//  SERVICE WORKER — Guía de Perfusión Pediátrica
-//  Para actualizar la caché: cambia CACHE_VERSION (ej: 'v1.3')
+//  SERVICE WORKER — Guía de Perfusión Pediátrica  v2.0
+//
+//  ESTRATEGIA:
+//  · index.html / navegación  →  NETWORK-FIRST
+//      (si hay red, siempre se sirve la versión más reciente;
+//       si no hay red, se sirve la copia en caché → funciona offline)
+//  · resto (iconos, manifest)  →  CACHE-FIRST
+//
+//  Para forzar limpieza de caché: cambia CACHE_VERSION (ej: 'v2.1')
 // ============================================================
-
-const CACHE_VERSION = 'v1.2';
-const CACHE_NAME    = 'guia-perfusion-' + CACHE_VERSION;
-
+const CACHE_VERSION = 'v2.1';
+const CACHE_NAME    = 'guia-perfusion-ped-' + CACHE_VERSION;
 const URLS_TO_CACHE = [
     './',
     './index.html',
@@ -16,11 +21,8 @@ const URLS_TO_CACHE = [
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('[SW] Cacheando archivos esenciales');
-                return cache.addAll(URLS_TO_CACHE);
-            })
-            .then(() => self.skipWaiting())   // activa el SW inmediatamente
+            .then(cache => cache.addAll(URLS_TO_CACHE))
+            .then(() => self.skipWaiting())
     );
 });
 
@@ -28,52 +30,53 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys()
-            .then(cacheNames =>
+            .then(names =>
                 Promise.all(
-                    cacheNames
-                        .filter(name => name !== CACHE_NAME)
-                        .map(name => {
-                            console.log('[SW] Borrando caché antigua:', name);
-                            return caches.delete(name);
-                        })
+                    names
+                        .filter(n => n !== CACHE_NAME)
+                        .map(n => caches.delete(n))
                 )
             )
-            .then(() => self.clients.claim())  // toma control sin recargar
+            .then(() => self.clients.claim())
     );
 });
 
-// ---- FETCH: cache-first con fallback a red ----
+// ---- FETCH ----
 self.addEventListener('fetch', event => {
-    // Solo interceptamos peticiones GET
     if (event.request.method !== 'GET') return;
 
+    const isHTML =
+        event.request.mode === 'navigate' ||
+        event.request.destination === 'document' ||
+        event.request.url.endsWith('index.html') ||
+        event.request.url.endsWith('/');
+
+    if (isHTML) {
+        // NETWORK-FIRST: la app siempre intenta traer la última versión
+        event.respondWith(
+            fetch(event.request)
+                .then(response => {
+                    const toCache = response.clone();
+                    caches.open(CACHE_NAME).then(c => c.put(event.request, toCache));
+                    return response;
+                })
+                .catch(() => caches.match(event.request)
+                    .then(cached => cached || caches.match('./index.html')))
+        );
+        return;
+    }
+
+    // CACHE-FIRST para el resto de recursos
     event.respondWith(
-        caches.match(event.request)
-            .then(cached => {
-                if (cached) return cached;
-
-                return fetch(event.request)
-                    .then(response => {
-                        // Solo cacheamos respuestas válidas del mismo origen
-                        if (
-                            !response ||
-                            response.status !== 200 ||
-                            response.type !== 'basic'
-                        ) {
-                            return response;
-                        }
-
-                        // Clonar antes de cachear (el stream solo se puede leer una vez)
-                        const toCache = response.clone();
-                        caches.open(CACHE_NAME)
-                            .then(cache => cache.put(event.request, toCache));
-
-                        return response;
-                    })
-                    .catch(() => {
-                        // Sin red y sin caché: devolvemos index.html como fallback
-                        return caches.match('./index.html');
-                    });
-            })
+        caches.match(event.request).then(cached => {
+            if (cached) return cached;
+            return fetch(event.request).then(response => {
+                if (response && response.status === 200 && response.type === 'basic') {
+                    const toCache = response.clone();
+                    caches.open(CACHE_NAME).then(c => c.put(event.request, toCache));
+                }
+                return response;
+            });
+        })
     );
 });
