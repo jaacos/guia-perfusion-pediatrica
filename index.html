@@ -58,7 +58,7 @@
         /* ===== LAYOUT ===== */
         .app {
             width: 100%;
-            max-width: 440px;
+            max-width: 480px;
             display: flex;
             flex-direction: column;
             gap: 1.25rem;
@@ -90,6 +90,35 @@
             padding: 1.5rem;
         }
 
+        /* ===== MODE TOGGLE ===== */
+        .mode-toggle {
+            display: flex;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 3px;
+            margin-bottom: 1.25rem;
+        }
+
+        .mode-toggle button {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.55rem 0.4rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            font-family: inherit;
+        }
+
+        .mode-toggle button.active {
+            background: var(--accent);
+            color: #0f172a;
+        }
+
         /* ===== FIELDS ===== */
         .field { margin-bottom: 1.1rem; }
         .field:last-child { margin-bottom: 0; }
@@ -114,7 +143,7 @@
             border-radius: var(--radius-sm);
             color: var(--text);
             font-size: 1rem;
-            padding: 0.7rem 4.5rem 0.7rem 0.9rem;
+            padding: 0.7rem 5.5rem 0.7rem 0.9rem;
             outline: none;
             transition: border-color 0.2s;
             -webkit-appearance: none;
@@ -135,9 +164,18 @@
             color: var(--text-muted);
             pointer-events: none;
             white-space: nowrap;
-            max-width: 4rem;
+            max-width: 5rem;
             text-align: right;
         }
+
+        .field-hint {
+            display: none;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #f59e0b;
+            margin-top: 0.35rem;
+        }
+        .field-hint.show { display: block; }
 
         /* ===== AUTOCOMPLETE ===== */
         .autocomplete-wrap { position: relative; }
@@ -221,16 +259,28 @@
             margin-left: 0.3rem;
         }
 
-        #range-alert {
+        #result-extra {
+            display: none;
+            margin-top: 0.7rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+        #result-extra.show { display: block; }
+        #result-extra strong { color: var(--text); font-weight: 600; }
+
+        #range-alert, #rate-alert {
             display: none;
             margin-top: 0.6rem;
             font-size: 0.78rem;
             font-weight: 600;
         }
 
-        #range-alert.show { display: block; }
+        #range-alert.show, #rate-alert.show { display: block; }
         #range-alert.above { color: #ef4444; }
         #range-alert.below { color: #f59e0b; }
+        #rate-alert.danger-txt { color: #ef4444; }
+        #rate-alert.warn-txt   { color: #f59e0b; }
 
         /* ===== DRUG INFO ===== */
         #drug-info {
@@ -269,6 +319,18 @@
             text-align: right;
         }
 
+        .drug-note {
+            margin-top: 0.7rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: var(--radius-sm);
+            background: var(--warn-bg);
+            border: 1px solid var(--warn-border);
+            color: var(--text);
+            font-size: 0.78rem;
+            text-align: left;
+            line-height: 1.5;
+        }
+
         /* ===== FOOTER ===== */
         footer {
             text-align: center;
@@ -278,6 +340,7 @@
         }
 
         footer strong { color: #f59e0b; }
+        .version { opacity: 0.6; margin-top: 0.3rem; }
 
         /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar { width: 5px; }
@@ -296,12 +359,19 @@
 
     <div class="card">
 
+        <!-- Selector de modo: dosis→ritmo o ritmo→dosis -->
+        <div class="mode-toggle">
+            <button id="mode-forward" class="active" type="button">Dosis → ml/h</button>
+            <button id="mode-inverse" type="button">ml/h → Dosis</button>
+        </div>
+
         <div class="field">
             <label for="weight">Peso del paciente</label>
             <div class="input-wrap">
-                <input type="number" id="weight" placeholder="Ej: 12.5" min="0.5" max="120" step="0.1">
+                <input type="number" id="weight" placeholder="Ej: 12.5" min="0.5" max="120" step="0.1" inputmode="decimal">
                 <span class="unit-badge">kg</span>
             </div>
+            <div id="weight-hint" class="field-hint">Peso ≥ 50 kg: valore emplear pautas de adulto.</div>
         </div>
 
         <div class="field">
@@ -313,9 +383,9 @@
         </div>
 
         <div class="field">
-            <label for="dose">Dosis deseada</label>
+            <label for="dose" id="dose-label">Dosis deseada</label>
             <div class="input-wrap">
-                <input type="number" id="dose" placeholder="Seleccione un fármaco" disabled min="0" step="any">
+                <input type="number" id="dose" placeholder="Seleccione un fármaco" disabled min="0" step="any" inputmode="decimal">
                 <span id="dose-unit" class="unit-badge">—</span>
             </div>
         </div>
@@ -323,12 +393,14 @@
         <hr>
 
         <div id="result-box">
-            <div class="result-label">Ritmo de perfusión</div>
+            <div class="result-label" id="result-label">Ritmo de perfusión</div>
             <div>
                 <span class="result-value" id="result-val">—</span>
-                <span class="result-unit">ml/h</span>
+                <span class="result-unit" id="result-unit">ml/h</span>
             </div>
+            <div id="result-extra"></div>
             <div id="range-alert"></div>
+            <div id="rate-alert"></div>
         </div>
 
         <div id="drug-info">
@@ -339,293 +411,354 @@
 
     <footer>
         <strong>⚠ Aviso:</strong> Herramienta de apoyo. No sustituye el juicio clínico.<br>
-        Verifique siempre los cálculos y las diluciones antes de administrar.
+        Verifique siempre los cálculos y las diluciones antes de administrar.<br>
+        <span class="version">v2.1 · Pendiente de validación por farmacia</span>
     </footer>
 
 </div>
 
 <script>
 // ============================================================
-//  BASE DE DATOS
-//  concentration: mcg/ml  salvo concUnit='mg/ml' o 'UI/ml'
+//  BASE DE DATOS  (v2.0 — auditada)
+//  concentration: mcg/ml salvo concUnit = 'mg/ml' o 'UI/ml'
 //  doseMin/doseMax: en la misma unidad que doseUnit
+//  note: alerta clínica visible al seleccionar el fármaco (opcional)
 // ============================================================
 const drugs = [
     {
         name: "Ácido Valproico",
         trade: "Depakine",
-        preparation: "200 mg en 50 ml SF o SG5%",
-        concentration: 4000,   // mcg/ml  (200mg/50ml = 4mg/ml = 4000mcg/ml)
+        preparation: "200 mg + SF o SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 4000,
         concUnit: "mcg/ml",
         doseUnit: "mg/kg/h",
-        doseMin: 1, doseMax: 5
+        doseMin: 1, doseMax: 5,
+        note: "Mantenimiento tras dosis de carga. Rango habitual 1–2 mg/kg/h; hasta 5 en estatus según protocolo."
     },
     {
         name: "Adrenalina",
         trade: "Genérico (B. Braun)",
-        preparation: "0.5 mg en 50 ml SG5%",
-        concentration: 10,     // mcg/ml
+        preparation: "0.5 mg + SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 10,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 0.05, doseMax: 1
+        doseMin: 0.05, doseMax: 1,
+        note: "Preferible vía central. En pacientes >15 kg o dosis altas, esta dilución agota la jeringa rápido: valore dilución más concentrada según protocolo."
     },
     {
         name: "Amiodarona",
         trade: "Trangorex",
-        preparation: "60 mg en 50 ml SG5%",
-        concentration: 1200,   // mcg/ml
+        preparation: "60 mg + SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 1200,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 5, doseMax: 15
+        doseMin: 5, doseMax: 15,
+        note: "Diluir SOLO en SG5% (incompatible con SF). Mantenimiento tras carga de 5 mg/kg. Máx. 15 mg/kg/día."
     },
     {
         name: "Atracurio",
         trade: "Tracrium",
-        preparation: "50 mg en 50 ml SF",
-        concentration: 1000,   // mcg/ml
+        preparation: "50 mg + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 1000,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 5, doseMax: 10
+        doseMin: 5, doseMax: 10,
+        note: "Conservar ampollas en nevera."
     },
     {
         name: "Cisatracurio",
         trade: "Nimbex",
-        preparation: "50 mg en 50 ml SF",
-        concentration: 1000,   // mcg/ml
+        preparation: "50 mg + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 1000,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 0.5, doseMax: 2
+        doseMin: 1, doseMax: 3
     },
     {
         name: "Clonidina",
         trade: "Catapresan",
-        preparation: "750 mcg en 50 ml SF",
-        concentration: 15,     // mcg/ml
+        preparation: "750 mcg + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 15,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/h",
-        doseMin: 0.1, doseMax: 2
+        doseMin: 0.1, doseMax: 2,
+        note: "Vigilar bradicardia e hipotensión. No suspender bruscamente (efecto rebote)."
     },
     {
         name: "Cloruro Mórfico",
         trade: "Genérico",
-        preparation: "50 mg en 50 ml SF o SG5%",
-        concentration: 1000,   // mcg/ml  (50mg/50ml = 1mg/ml = 1000mcg/ml)
+        preparation: "50 mg + SF o SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 1000,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/h",
-        doseMin: 10, doseMax: 40
+        doseMin: 10, doseMax: 40,
+        note: "En lactantes pequeños los ritmos resultan muy bajos (<0,5 ml/h): valore dilución más diluida (p. ej. 1 mg/kg en 50 ml → 20 mcg/kg/h = 1 ml/h)."
     },
     {
         name: "Dexmedetomidina",
         trade: "Dexdor",
-        preparation: "200 mcg en 50 ml SF",
-        concentration: 4,      // mcg/ml
+        preparation: "200 mcg + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 4,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/h",
-        doseMin: 0.2, doseMax: 1.5
+        doseMin: 0.2, doseMax: 1.5,
+        note: "Vigilar bradicardia. Reducir en insuficiencia hepática."
     },
     {
         name: "Dobutamina",
         trade: "Genérico",
-        preparation: "50 mg en 50 ml SG5%",
-        concentration: 1000,   // mcg/ml
+        preparation: "50 mg + SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 1000,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 2, doseMax: 20
+        doseMin: 2, doseMax: 20,
+        note: "Preferible vía central."
     },
     {
         name: "Dopamina",
         trade: "Genérico",
-        preparation: "40 mg en 50 ml SG5%",
-        concentration: 800,    // mcg/ml
+        preparation: "40 mg + SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 800,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 2, doseMax: 20
+        doseMin: 2, doseMax: 20,
+        note: "Preferible vía central. La extravasación produce necrosis (antídoto: fentolamina)."
     },
     {
         name: "Esmolol",
         trade: "Brevibloc",
-        preparation: "500 mg en 50 ml SF",
-        concentration: 10000,  // mcg/ml
+        preparation: "PURO (10 mg/ml). Cargar 50 ml directamente (5 viales de 100 mg/10 ml)",
+        concentration: 10000,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 100, doseMax: 500
+        doseMin: 50, doseMax: 300,
+        note: "Se carga SIN DILUIR: 5 viales de 10 ml son ya 50 ml exactos (no cabe diluyente). Vida media ~9 min. En emergencia hipertensiva algunos protocolos llegan a 500 mcg/kg/min: dosis superiores a 300 generarán alerta pero se calcularán."
     },
     {
         name: "Fentanilo",
         trade: "Fentanest",
-        preparation: "500 mcg en 50 ml SF",
-        concentration: 10,     // mcg/ml
+        preparation: "3 amp (450 mcg) + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 9,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/h",
-        doseMin: 1, doseMax: 2
+        doseMin: 1, doseMax: 4,
+        note: "Preparación con 3 ampollas ENTERAS de 150 mcg (450 mcg = 9 mcg/ml). Con el stock real no es posible cargar 500 mcg. No administrar por el mismo acceso que Propofol. Riesgo de rigidez torácica con bolos rápidos."
+    },
+    {
+        name: "Gluconato Cálcico 10%",
+        trade: "Suplecal / Genérico",
+        preparation: "1 amp (1 g = 10 ml) + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 20000,
+        concUnit: "mcg/ml",
+        doseUnit: "mg/kg/h",
+        doseMin: 8, doseMax: 33,
+        note: "Dosis expresada en mg de GLUCONATO cálcico (no de calcio elemento: 1 g de gluconato = 93 mg de Ca elemento). Mantenimiento de hipocalcemia. La corrección aguda se hace en BOLO (100–200 mg/kg en 10–20 min), no con esta perfusión. VESICANTE: la extravasación produce necrosis, preferible vía central. Monitorización ECG: la infusión rápida causa bradicardia y asistolia. INCOMPATIBLE con bicarbonato y fosfatos (precipita)."
     },
     {
         name: "Heparina Sódica",
         trade: "Genérico (Rovi/Hospira)",
-        preparation: "5000 UI en 50 ml SF",
-        concentration: 100,    // UI/ml
+        preparation: "5000 UI + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 100,
         concUnit: "UI/ml",
         doseUnit: "UI/kg/h",
-        doseMin: 10, doseMax: 25
+        doseMin: 10, doseMax: 25,
+        note: "REQUIERE control de TTPa para ajustar. Nunca ajustar a ciegas."
     },
     {
         name: "Insulina Rápida",
         trade: "Actrapid",
-        preparation: "50 UI en 50 ml SF",
-        concentration: 1,      // UI/ml
+        preparation: "50 UI + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 1,
         concUnit: "UI/ml",
         doseUnit: "UI/kg/h",
-        doseMin: 0.05, doseMax: 0.1
+        doseMin: 0.05, doseMax: 0.1,
+        note: "CAD pediátrica: 0,05–0,1 UI/kg/h. Purgar 20 ml del sistema antes de conectar (adsorción al PVC). Control de glucemia horaria."
     },
     {
         name: "Isoproterenol",
         trade: "Aleudrina",
-        preparation: "0.2 mg en 50 ml SG5%",
-        concentration: 4,      // mcg/ml
+        preparation: "0.2 mg + SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 4,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 0.05, doseMax: 2
+        doseMin: 0.05, doseMax: 2,
+        note: "Dilución muy diluida: con >10 kg o dosis >0,1 mcg/kg/min la jeringa se agota en minutos. Valore dilución concentrada (p. ej. 1 mg en 50 ml → 20 mcg/ml)."
     },
     {
         name: "Ketamina",
         trade: "Ketolar",
-        preparation: "50 mg en 50 ml SF",
-        concentration: 1000,   // mcg/ml
+        preparation: "50 mg + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 1000,
         concUnit: "mcg/ml",
         doseUnit: "mg/kg/h",
-        doseMin: 0.5, doseMax: 5
+        doseMin: 0.5, doseMax: 5,
+        note: "Sedoanalgesia habitual 0,5–2 mg/kg/h; dosis superiores reservadas a protocolos específicos (asma grave). Valorar benzodiacepina concomitante."
     },
     {
         name: "Labetalol",
         trade: "Trandate",
-        preparation: "50 mg en 50 ml SF",
-        concentration: 1000,   // mcg/ml
+        preparation: "50 mg + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 1000,
         concUnit: "mcg/ml",
         doseUnit: "mg/kg/h",
-        doseMin: 0.25, doseMax: 3
+        doseMin: 0.25, doseMax: 3,
+        note: "Contraindicado en asma, insuficiencia cardiaca descompensada y bloqueo AV."
     },
     {
         name: "Levosimendan",
         trade: "Simdax",
-        preparation: "1.25 mg en 50 ml SG5%",
-        concentration: 25,     // mcg/ml
+        preparation: "1.25 mg + SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 25,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 0.05, doseMax: 0.2
+        doseMin: 0.05, doseMax: 0.2,
+        note: "Diluir SOLO en SG5%. Perfusión continua de 24 h. Preferible vía central."
     },
     {
         name: "Lidocaína 2%",
         trade: "Genérico",
-        preparation: "100 mg en 50 ml SG5%",
-        concentration: 2000,   // mcg/ml
+        preparation: "100 mg + SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 2000,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 20, doseMax: 50
+        doseMin: 20, doseMax: 50,
+        note: "Monitorización ECG continua. Reducir en hepatopatía e insuficiencia cardiaca."
     },
     {
         name: "Magnesio (Sulfato)",
         trade: "Sulmetin",
-        preparation: "2.5 g en 50 ml SF",
-        concentration: 50,     // mg/ml  ← excepción: concUnit mg/ml
+        preparation: "2.5 g + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 50,
         concUnit: "mg/ml",
         doseUnit: "mg/kg/h",
-        doseMin: 25, doseMax: 75
+        doseMin: 25, doseMax: 75,
+        note: "ATENCIÓN: la pauta clásica es un BOLO de 25–75 mg/kg administrado EN 20–30 MIN, no una perfusión de 1 h. Si programa el bolo en 30 min, el ritmo debe ser el DOBLE del calculado aquí. Control de magnesemia y reflejos."
     },
     {
         name: "Midazolam",
         trade: "Dormicum",
-        preparation: "50 mg en 50 ml SF",
-        concentration: 1000,   // mcg/ml
+        preparation: "3 amp (45 mg) + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 900,
         concUnit: "mcg/ml",
         doseUnit: "mg/kg/h",
-        doseMin: 0.06, doseMax: 4
+        doseMin: 0.06, doseMax: 0.3,
+        note: "Preparación con 3 ampollas ENTERAS de 15 mg (45 mg = 0,9 mg/ml). Con el stock real no es posible cargar 50 mg. Sedación habitual: 0,06–0,3 mg/kg/h (1–5 mcg/kg/min). En estatus epiléptico refractario algunos protocolos superan este rango: la dosis dará alerta pero se calculará igualmente."
     },
     {
         name: "Milrinona",
         trade: "Corotrope",
-        preparation: "10 mg en 50 ml SG5%",
-        concentration: 200,    // mcg/ml
+        preparation: "10 mg + SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 200,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 0.25, doseMax: 1
+        doseMin: 0.25, doseMax: 1,
+        note: "Ajustar en insuficiencia renal. Preferible vía central."
+    },
+    {
+        name: "N-Acetilcisteína",
+        trade: "Flumil Antídoto",
+        preparation: "1 amp (2 g = 10 ml) + SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 40,
+        concUnit: "mg/ml",
+        doseUnit: "mg/kg/h",
+        doseMin: 6.25, doseMax: 12.5,
+        note: "SOLO FASE DE MANTENIMIENTO (fase 3: 100 mg/kg en 16 h = 6,25 mg/kg/h). La pauta completa de intoxicación por paracetamol tiene 3 FASES: carga 150 mg/kg en 60 min, después 50 mg/kg en 4 h, después 100 mg/kg en 16 h. Las fases 1 y 2 NO se administran con esta jeringa: requieren volumen mayor y bomba volumétrica. Vigilar reacción anafilactoide (frecuente en la carga): si aparece, detener y reanudar más lento."
     },
     {
         name: "Nitroglicerina",
         trade: "Solinitrina",
-        preparation: "10 mg en 50 ml SG5%",
-        concentration: 200,    // mcg/ml
+        preparation: "10 mg + SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 200,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 0.5, doseMax: 10
+        doseMin: 0.5, doseMax: 10,
+        note: "Se adsorbe al PVC: usar sistema purgado, preferiblemente de poliuretano."
     },
     {
         name: "Nitroprusiato",
         trade: "Nitroprussiat",
-        preparation: "10 mg en 50 ml SG5%",
-        concentration: 200,    // mcg/ml
+        preparation: "10 mg + SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 200,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 0.3, doseMax: 10
+        doseMin: 0.3, doseMax: 10,
+        note: "FOTOSENSIBLE: cubrir jeringa y línea. Diluir SOLO en SG5%. Riesgo de toxicidad por cianuro si >4 mcg/kg/min prolongado."
     },
     {
         name: "Noradrenalina",
         trade: "Genérico (B. Braun)",
-        preparation: "1 mg en 50 ml SG5%",
-        concentration: 20,     // mcg/ml
+        preparation: "1 mg + SG5% hasta VOLUMEN FINAL 50 ml",
+        concentration: 20,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 0.05, doseMax: 1
+        doseMin: 0.05, doseMax: 1,
+        note: "Preferible vía central. En pacientes grandes o dosis altas, valore dilución más concentrada según protocolo."
     },
     {
         name: "Propofol 1%",
         trade: "Diprivan / Genérico",
-        preparation: "Directo (10 mg/ml). Cargar 50 ml",
-        concentration: 10000,  // mcg/ml
+        preparation: "PURO (10 mg/ml). Cargar 50 ml directamente",
+        concentration: 10000,
         concUnit: "mcg/ml",
         doseUnit: "mg/kg/h",
-        doseMin: 1, doseMax: 6
+        doseMin: 1, doseMax: 6,
+        note: "No usar para sedación prolongada en pediatría (riesgo de síndrome de infusión de propofol, PRIS). No administrar con Fentanilo por el mismo acceso. Alergia a huevo/soja."
     },
     {
         name: "Propofol 2%",
         trade: "Diprivan / Genérico",
-        preparation: "Directo (20 mg/ml). Cargar 50 ml",
-        concentration: 20000,  // mcg/ml
+        preparation: "PURO (20 mg/ml). Cargar 50 ml directamente",
+        concentration: 20000,
         concUnit: "mcg/ml",
         doseUnit: "mg/kg/h",
-        doseMin: 1, doseMax: 6
+        doseMin: 1, doseMax: 6,
+        note: "No usar para sedación prolongada en pediatría (riesgo de PRIS). No administrar con Fentanilo por el mismo acceso. Alergia a huevo/soja."
     },
     {
         name: "Remifentanilo",
         trade: "Ultiva",
-        preparation: "1 mg en 50 ml SF",
-        concentration: 20,     // mcg/ml
+        preparation: "1 mg + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 20,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 0.025, doseMax: 0.2
+        doseMin: 0.025, doseMax: 0.2,
+        note: "Sin efecto residual: prever analgesia de rescate antes de suspender."
     },
     {
         name: "Rocuronio",
         trade: "Esmeron",
-        preparation: "250 mg en 50 ml SF",
-        concentration: 5000,   // mcg/ml
+        preparation: "250 mg + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 5000,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
-        doseMin: 5, doseMax: 15
+        doseMin: 5, doseMax: 15,
+        note: "Antídoto: Sugammadex."
+    },
+    {
+        name: "Salbutamol",
+        trade: "Ventolin IV",
+        preparation: "5 amp (2.5 mg) + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 50,
+        concUnit: "mcg/ml",
+        doseUnit: "mcg/kg/min",
+        doseMin: 0.2, doseMax: 2,
+        note: "Crisis asmática grave que no responde a nebulización. Habitual: iniciar a 0,2 mcg/kg/min y subir progresivamente. Algunos protocolos llegan a 5 mcg/kg/min: dará alerta pero se calculará. Vigilar TAQUICARDIA, HIPOPOTASEMIA (controlar K+) y acidosis láctica. Monitorización ECG continua."
     },
     {
         name: "Urapidil",
         trade: "Elgadil",
-        preparation: "50 mg en 50 ml SF",
-        concentration: 1000,   // mcg/ml
+        preparation: "50 mg + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 1000,
         concUnit: "mcg/ml",
         doseUnit: "mg/kg/h",
-        doseMin: 0.8, doseMax: 3.3
+        doseMin: 0.15, doseMax: 0.4,
+        note: "RANGO CORREGIDO en v2.1 (el anterior, 0,8–3,3 mg/kg/h, era de 5 a 8 veces superior al de las guías SAMUR y SUC). Equivale a 2,5–7 mcg/kg/min. Datos pediátricos limitados: usar según protocolo del servicio. Contraindicado en estenosis aórtica."
     },
     {
         name: "Vecuronio",
         trade: "Norcuron",
-        preparation: "20 mg en 50 ml SF",
-        concentration: 400,    // mcg/ml
+        preparation: "20 mg + SF hasta VOLUMEN FINAL 50 ml",
+        concentration: 400,
         concUnit: "mcg/ml",
         doseUnit: "mcg/kg/min",
         doseMin: 0.8, doseMax: 1.7
@@ -633,41 +766,89 @@ const drugs = [
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 // ============================================================
-//  FÓRMULAS
-//  mcg/kg/min → (dose × peso × 60) / conc_mcg/ml
-//  mcg/kg/h   → (dose × peso) / conc_mcg/ml
-//  mg/kg/h    → (dose × peso × 1000) / conc_mcg/ml
-//               si concUnit='mg/ml': (dose × peso) / conc_mg/ml
-//  UI/kg/h    → (dose × peso) / conc_UI/ml
+//  MOTOR DE CÁLCULO (único punto de verdad)
+//  factor = ml/h que corresponde a 1 unidad de dosis
+//  ritmo (ml/h)  = dosis × factor
+//  dosis         = ritmo ÷ factor      (modo inverso)
 // ============================================================
-function calcRate(drug, weight, dose) {
+function rateFactor(drug, weight) {
     const c = drug.concentration;
     switch (drug.doseUnit) {
-        case 'mcg/kg/min': return (dose * weight * 60) / c;
-        case 'mcg/kg/h':   return (dose * weight) / c;
+        case 'mcg/kg/min': return (weight * 60) / c;
+        case 'mcg/kg/h':   return weight / c;
         case 'mg/kg/h':
             return drug.concUnit === 'mg/ml'
-                ? (dose * weight) / c
-                : (dose * weight * 1000) / c;
-        case 'UI/kg/h':    return (dose * weight) / c;
+                ? weight / c
+                : (weight * 1000) / c;
+        case 'UI/kg/h':    return weight / c;
         default:           return 0;
     }
+}
+
+// Redondeo inteligente: más decimales cuanto más pequeño el número
+function fmt(n) {
+    if (n >= 100) return n.toFixed(0);
+    if (n >= 10)  return n.toFixed(1);
+    if (n >= 1)   return n.toFixed(2);
+    return n.toFixed(3);
 }
 
 // ============================================================
 //  DOM
 // ============================================================
 const weightInput    = document.getElementById('weight');
+const weightHint     = document.getElementById('weight-hint');
 const drugSearchInput= document.getElementById('drug-search');
 const suggestionsDiv = document.getElementById('drug-suggestions');
 const doseInput      = document.getElementById('dose');
+const doseLabel      = document.getElementById('dose-label');
 const doseUnitSpan   = document.getElementById('dose-unit');
 const resultBox      = document.getElementById('result-box');
+const resultLabel    = document.getElementById('result-label');
 const resultVal      = document.getElementById('result-val');
+const resultUnit     = document.getElementById('result-unit');
+const resultExtra    = document.getElementById('result-extra');
 const rangeAlert     = document.getElementById('range-alert');
+const rateAlert      = document.getElementById('rate-alert');
 const drugInfoDiv    = document.getElementById('drug-info');
+const modeForwardBtn = document.getElementById('mode-forward');
+const modeInverseBtn = document.getElementById('mode-inverse');
 
 let selectedDrug = null;
+let mode = 'forward';   // 'forward' = dosis→ml/h · 'inverse' = ml/h→dosis
+
+// ============================================================
+//  MODO
+// ============================================================
+function setMode(m) {
+    mode = m;
+    modeForwardBtn.classList.toggle('active', m === 'forward');
+    modeInverseBtn.classList.toggle('active', m === 'inverse');
+    doseInput.value = '';
+    refreshModeLabels();
+    calculate();
+}
+
+function refreshModeLabels() {
+    if (mode === 'forward') {
+        doseLabel.textContent = 'Dosis deseada';
+        resultLabel.textContent = 'Ritmo de perfusión';
+        resultUnit.textContent = 'ml/h';
+        if (selectedDrug) {
+            doseUnitSpan.textContent = selectedDrug.doseUnit;
+            doseInput.placeholder = `${selectedDrug.doseMin} – ${selectedDrug.doseMax}`;
+        }
+    } else {
+        doseLabel.textContent = 'Ritmo programado';
+        resultLabel.textContent = 'Dosis equivalente';
+        resultUnit.textContent = selectedDrug ? selectedDrug.doseUnit : '—';
+        doseUnitSpan.textContent = 'ml/h';
+        if (selectedDrug) doseInput.placeholder = 'Ej: 5';
+    }
+}
+
+modeForwardBtn.addEventListener('click', () => setMode('forward'));
+modeInverseBtn.addEventListener('click', () => setMode('inverse'));
 
 // ============================================================
 //  AUTOCOMPLETE
@@ -709,8 +890,11 @@ function selectDrug(drug) {
 
     doseInput.disabled = false;
     doseInput.value = '';
-    doseInput.placeholder = `${drug.doseMin} – ${drug.doseMax}`;
-    doseUnitSpan.textContent = drug.doseUnit;
+    refreshModeLabels();
+
+    let noteHtml = drug.note
+        ? `<div class="drug-note">⚠ ${drug.note}</div>`
+        : '';
 
     drugInfoDiv.innerHTML = `
         <div class="info-row">
@@ -729,6 +913,7 @@ function selectDrug(drug) {
             <span class="info-key">Rango habitual</span>
             <span class="info-val">${drug.doseMin} – ${drug.doseMax} ${drug.doseUnit}</span>
         </div>
+        ${noteHtml}
     `;
 
     calculate();
@@ -751,15 +936,46 @@ function calculate() {
     if (!selectedDrug) { showNeutral(); return; }
 
     const weight = parseFloat(weightInput.value);
-    const dose   = parseFloat(doseInput.value);
+    const input  = parseFloat(doseInput.value);
 
-    if (isNaN(weight) || weight <= 0 || isNaN(dose) || dose < 0) {
+    // Aviso de peso alto (independiente del cálculo)
+    weightHint.classList.toggle('show', !isNaN(weight) && weight >= 50);
+
+    if (isNaN(weight) || weight <= 0 || isNaN(input) || input < 0) {
         showNeutral(); return;
     }
 
-    const rate = calcRate(selectedDrug, weight, dose);
-    resultVal.textContent = rate.toFixed(2);
+    const factor = rateFactor(selectedDrug, weight);
+    if (!factor) { showNeutral(); return; }
 
+    let dose, rate;
+    if (mode === 'forward') {
+        dose = input;
+        rate = dose * factor;
+        resultVal.textContent = fmt(rate);
+    } else {
+        rate = input;
+        dose = rate / factor;
+        resultVal.textContent = fmt(dose);
+    }
+
+    // ---- Información complementaria: duración de jeringa y equivalencia ----
+    const durationMin = rate > 0 ? (50 / rate) * 60 : Infinity;
+    let durTxt;
+    if (!isFinite(durationMin))      durTxt = '—';
+    else if (durationMin >= 5760)    durTxt = '&gt;4 días';
+    else if (durationMin >= 60)      durTxt = `${Math.floor(durationMin / 60)} h ${Math.round(durationMin % 60)} min`;
+    else                             durTxt = `${Math.round(durationMin)} min`;
+
+    const crossTxt = (mode === 'forward')
+        ? `Ritmo: <strong>${fmt(rate)} ml/h</strong>`
+        : `Dosis: <strong>${fmt(dose)} ${selectedDrug.doseUnit}</strong>`;
+
+    resultExtra.innerHTML =
+        `${crossTxt} · Jeringa de 50 ml: <strong>${durTxt}</strong>`;
+    resultExtra.classList.add('show');
+
+    // ---- Alerta de rango de dosis ----
     const above = dose > selectedDrug.doseMax;
     const below = dose < selectedDrug.doseMin;
 
@@ -778,6 +994,24 @@ function calculate() {
         rangeAlert.className = '';
         rangeAlert.textContent = '';
     }
+
+    // ---- Alerta de ritmo (agotamiento de jeringa / precisión de bomba) ----
+    rateAlert.className = '';
+    rateAlert.textContent = '';
+    if (rate > 0 && durationMin < 30) {
+        rateAlert.className = 'show danger-txt';
+        rateAlert.textContent =
+            `⚠ La jeringa se agota en ${Math.round(durationMin)} min. Prepare relevo o use dilución más concentrada / bomba volumétrica.`;
+        if (resultBox.className === 'ok') resultBox.className = 'warn';
+    } else if (rate > 0 && durationMin < 60) {
+        rateAlert.className = 'show warn-txt';
+        rateAlert.textContent =
+            `⚠ La jeringa se agota en menos de 1 h (${Math.round(durationMin)} min). Prepare relevo.`;
+    } else if (rate > 0 && rate < 0.5) {
+        rateAlert.className = 'show warn-txt';
+        rateAlert.textContent =
+            `⚠ Ritmo muy bajo (${fmt(rate)} ml/h): compruebe que su bomba admite esta precisión o use una dilución más diluida.`;
+    }
 }
 
 function showNeutral() {
@@ -785,6 +1019,10 @@ function showNeutral() {
     resultBox.className = '';
     rangeAlert.className = '';
     rangeAlert.textContent = '';
+    rateAlert.className = '';
+    rateAlert.textContent = '';
+    resultExtra.classList.remove('show');
+    resultExtra.innerHTML = '';
 }
 
 weightInput.addEventListener('input', calculate);
