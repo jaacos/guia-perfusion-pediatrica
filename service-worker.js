@@ -1,5 +1,5 @@
 // ============================================================
-//  SERVICE WORKER — Guía de Perfusión Pediátrica  v2.0
+//  SERVICE WORKER — Guía de Perfusión Pediátrica  v2.2
 //
 //  ESTRATEGIA:
 //  · index.html / navegación  →  NETWORK-FIRST
@@ -7,9 +7,9 @@
 //       si no hay red, se sirve la copia en caché → funciona offline)
 //  · resto (iconos, manifest)  →  CACHE-FIRST
 //
-//  Para forzar limpieza de caché: cambia CACHE_VERSION (ej: 'v2.1')
+//  Para forzar limpieza de caché: cambia CACHE_VERSION (ej: 'v2.2')
 // ============================================================
-const CACHE_VERSION = 'v2.1';
+const CACHE_VERSION = 'v2.2';
 const CACHE_NAME    = 'guia-perfusion-ped-' + CACHE_VERSION;
 const URLS_TO_CACHE = [
     './',

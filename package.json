@@ -1,0 +1,14 @@
+{
+  "name": "guia-perfusion-pediatrica",
+  "version": "2.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js",
+    "build": "echo 'Static app - no build step needed'",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

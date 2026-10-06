@@ -1,0 +1,8 @@
+{
+  "name": "Perfusión Pediátrica",
+  "description": "Calculadora de dosis para perfusiones intravenosas en pediatría con perfusores de 50 ml",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -177,6 +177,208 @@
         }
         .field-hint.show { display: block; }
 
+        /* ===== ESTIMADOR DE PESO POR EDAD ===== */
+        .field-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.45rem;
+        }
+
+        .field-header label {
+            margin-bottom: 0;
+        }
+
+        .btn-estimator-toggle {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            color: var(--accent);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.22rem 0.55rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+
+        .btn-estimator-toggle:hover {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: var(--accent);
+        }
+
+        .btn-estimator-toggle.active {
+            background: var(--accent);
+            color: #0f172a;
+            border-color: var(--accent);
+        }
+
+        .estimator-panel {
+            display: none;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.85rem;
+            margin-top: 0.55rem;
+            margin-bottom: 0.55rem;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .estimator-panel.open {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .estimator-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.45rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+
+        .estimator-select {
+            width: 100%;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 0.85rem;
+            padding: 0.55rem 0.75rem;
+            outline: none;
+            margin-bottom: 0.65rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .estimator-select:focus {
+            border-color: var(--accent);
+        }
+
+        .estimator-select optgroup {
+            font-weight: 700;
+            color: var(--accent);
+            background: var(--surface2);
+        }
+
+        .estimator-select option {
+            font-weight: normal;
+            color: var(--text);
+            background: var(--surface);
+            padding: 0.35rem;
+        }
+
+        .quick-chips-title {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .quick-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin-bottom: 0.55rem;
+        }
+
+        .chip-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 0.72rem;
+            padding: 0.28rem 0.5rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.12s ease;
+            white-space: nowrap;
+        }
+
+        .chip-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .chip-btn.active {
+            background: var(--accent);
+            color: #0f172a;
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .estimator-meta {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+            padding-top: 0.5rem;
+            border-top: 1px dashed var(--border);
+        }
+
+        .estimator-meta strong {
+            color: var(--text);
+        }
+
+        .estimated-badge {
+            display: none;
+            margin-top: 0.45rem;
+            padding: 0.45rem 0.7rem;
+            border-radius: 6px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            font-size: 0.75rem;
+            color: #bae6fd;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .estimated-badge.show {
+            display: flex;
+        }
+
+        .estimated-badge .badge-text {
+            line-height: 1.35;
+        }
+
+        .estimated-badge .badge-text strong {
+            color: #fff;
+        }
+
+        .estimated-badge .badge-clear {
+            background: transparent;
+            border: none;
+            color: #7dd3fc;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 0.15rem 0.35rem;
+            border-radius: 4px;
+            line-height: 1;
+            opacity: 0.8;
+            transition: opacity 0.15s;
+        }
+
+        .estimated-badge .badge-clear:hover {
+            opacity: 1;
+            color: #fff;
+        }
+
         /* ===== AUTOCOMPLETE ===== */
         .autocomplete-wrap { position: relative; }
 
@@ -366,12 +568,46 @@
         </div>
 
         <div class="field">
-            <label for="weight">Peso del paciente</label>
+            <div class="field-header">
+                <label for="weight">Peso del paciente</label>
+                <button type="button" id="btn-toggle-estimator" class="btn-estimator-toggle" title="Estimar peso según edad si se desconoce">
+                    <span>⚡ Estimar por edad</span>
+                </button>
+            </div>
             <div class="input-wrap">
                 <input type="number" id="weight" placeholder="Ej: 12.5" min="0.5" max="120" step="0.1" inputmode="decimal">
                 <span class="unit-badge">kg</span>
             </div>
             <div id="weight-hint" class="field-hint">Peso ≥ 50 kg: valore emplear pautas de adulto.</div>
+
+            <!-- Badge de peso estimado activo -->
+            <div id="estimated-badge" class="estimated-badge">
+                <div class="badge-text" id="estimated-badge-text"></div>
+                <button type="button" class="badge-clear" id="btn-clear-estimate" title="Borrar peso estimado">✕</button>
+            </div>
+
+            <!-- Panel desplegable de estimación de peso estándar por edad -->
+            <div id="estimator-panel" class="estimator-panel">
+                <div class="estimator-title">
+                    <span>Estimación estándar por edad (RN – 14 años)</span>
+                    <span style="font-weight: 600; text-transform: none; font-size: 0.68rem; color: var(--accent);">APLS / ERC / SEUP</span>
+                </div>
+
+                <select id="estimator-select" class="estimator-select" aria-label="Seleccionar edad del paciente">
+                    <option value="">Seleccione edad (Recién nacido a 14 años)...</option>
+                </select>
+
+                <div class="quick-chips-title">Hitos rápidos de urgencia:</div>
+                <div id="quick-chips" class="quick-chips"></div>
+
+                <div class="estimator-meta">
+                    <strong>Ratios clínicos aplicados:</strong><br>
+                    • <strong>Lactantes (&lt;1a):</strong> RN 3.5 kg · APLS: (meses + 9) / 2 (duplica al 6º mes, triplica al año).<br>
+                    • <strong>Preescolares (1–5a):</strong> Fórmula APLS: (Edad + 4) × 2.<br>
+                    • <strong>Escolares (6–10a):</strong> Fórmula APLS / ERC: (3 × Edad) + 7.<br>
+                    • <strong>Pubertad (11–14a):</strong> 40 a 52 kg (cierre en 14 años; con ≥50 kg valorar pautas de adulto).
+                </div>
+            </div>
         </div>
 
         <div class="field">
@@ -412,7 +648,7 @@
     <footer>
         <strong>⚠ Aviso:</strong> Herramienta de apoyo. No sustituye el juicio clínico.<br>
         Verifique siempre los cálculos y las diluciones antes de administrar.<br>
-        <span class="version">v2.1 · Pendiente de validación por farmacia</span>
+        <span class="version">v2.2 · Con estimación de peso estándar por edad (RN – 14 años)</span>
     </footer>
 
 </div>
@@ -814,6 +1050,15 @@ const drugInfoDiv    = document.getElementById('drug-info');
 const modeForwardBtn = document.getElementById('mode-forward');
 const modeInverseBtn = document.getElementById('mode-inverse');
 
+// Elementos del estimador de peso por edad
+const btnToggleEstimator   = document.getElementById('btn-toggle-estimator');
+const estimatorPanel      = document.getElementById('estimator-panel');
+const estimatorSelect     = document.getElementById('estimator-select');
+const quickChipsContainer = document.getElementById('quick-chips');
+const estimatedBadge      = document.getElementById('estimated-badge');
+const estimatedBadgeText  = document.getElementById('estimated-badge-text');
+const btnClearEstimate    = document.getElementById('btn-clear-estimate');
+
 let selectedDrug = null;
 let mode = 'forward';   // 'forward' = dosis→ml/h · 'inverse' = ml/h→dosis
 
@@ -1025,7 +1270,142 @@ function showNeutral() {
     resultExtra.innerHTML = '';
 }
 
-weightInput.addEventListener('input', calculate);
+// ============================================================
+//  TABLA DE PESO ESTIMADO POR EDAD (RN HASTA 14 AÑOS / PUBERTAD)
+//  Estándar de urgencias y reanimación pediátrica (APLS / ERC / Nelson / SEUP)
+// ============================================================
+const ageWeightData = [
+    // Neonato y Lactantes (< 1 año)
+    { id: "rn", label: "Recién nacido a término (RN)", short: "RN (3.5 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 3.5, formula: "Referencia neonatal a término (~3.5 kg)" },
+    { id: "1m", label: "1 mes", short: "1m (4.2 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 4.2, formula: "Percentil 50 OMS (~4.2 kg)" },
+    { id: "2m", label: "2 meses", short: "2m (5 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 5.0, formula: "Percentil 50 OMS (~5.0 kg)" },
+    { id: "3m", label: "3 meses", short: "3m (6 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 6.0, formula: "Fórmula APLS: (3+9)/2 = 6 kg" },
+    { id: "4m", label: "4 meses", short: "4m (6.7 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 6.7, formula: "Percentil 50 OMS (~6.7 kg)" },
+    { id: "5m", label: "5 meses", short: "5m (7.3 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 7.3, formula: "Percentil 50 OMS (~7.3 kg)" },
+    { id: "6m", label: "6 meses (duplica peso)", short: "6m (8 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 8.0, formula: "Duplica peso nacimiento (~8.0 kg)" },
+    { id: "7m", label: "7 meses", short: "7m (8.5 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 8.5, formula: "Percentil 50 OMS (~8.5 kg)" },
+    { id: "8m", label: "8 meses", short: "8m (8.8 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 8.8, formula: "Percentil 50 OMS (~8.8 kg)" },
+    { id: "9m", label: "9 meses", short: "9m (9 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 9.0, formula: "Fórmula APLS: (9+9)/2 = 9 kg" },
+    { id: "10m", label: "10 meses", short: "10m (9.5 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 9.5, formula: "Percentil 50 OMS (~9.5 kg)" },
+    { id: "11m", label: "11 meses", short: "11m (9.8 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 9.8, formula: "Percentil 50 OMS (~9.8 kg)" },
+    { id: "12m", label: "12 meses / 1 año (triplica peso)", short: "1a (10 kg)", group: "Neonato y Lactantes (< 1 año)", weight: 10.0, formula: "Triplica peso al nacer / APLS: (1+4)×2 = 10 kg" },
+
+    // Preescolares (1 a 5 años) - Fórmula APLS: (Edad + 4) × 2
+    { id: "2y", label: "2 años", short: "2a (12 kg)", group: "Preescolares (1 a 5 años)", weight: 12.0, formula: "Fórmula APLS: (2+4)×2 = 12 kg" },
+    { id: "3y", label: "3 años", short: "3a (14 kg)", group: "Preescolares (1 a 5 años)", weight: 14.0, formula: "Fórmula APLS: (3+4)×2 = 14 kg" },
+    { id: "4y", label: "4 años", short: "4a (16 kg)", group: "Preescolares (1 a 5 años)", weight: 16.0, formula: "Fórmula APLS: (4+4)×2 = 16 kg" },
+    { id: "5y", label: "5 años", short: "5a (18 kg)", group: "Preescolares (1 a 5 años)", weight: 18.0, formula: "Fórmula APLS: (5+4)×2 = 18 kg" },
+
+    // Escolares (6 a 10 años) - Fórmula APLS / ERC: (3 × Edad) + 7
+    { id: "6y", label: "6 años", short: "6a (25 kg)", group: "Escolares (6 a 10 años)", weight: 25.0, formula: "Fórmula APLS/ERC: (3×6)+7 = 25 kg" },
+    { id: "7y", label: "7 años", short: "7a (28 kg)", group: "Escolares (6 a 10 años)", weight: 28.0, formula: "Fórmula APLS/ERC: (3×7)+7 = 28 kg" },
+    { id: "8y", label: "8 años", short: "8a (31 kg)", group: "Escolares (6 a 10 años)", weight: 31.0, formula: "Fórmula APLS/ERC: (3×8)+7 = 31 kg" },
+    { id: "9y", label: "9 años", short: "9a (34 kg)", group: "Escolares (6 a 10 años)", weight: 34.0, formula: "Fórmula APLS/ERC: (3×9)+7 = 34 kg" },
+    { id: "10y", label: "10 años", short: "10a (37 kg)", group: "Escolares (6 a 10 años)", weight: 37.0, formula: "Fórmula APLS/ERC: (3×10)+7 = 37 kg" },
+
+    // Pubertad / Cierre pediátrico (11 a 14 años)
+    { id: "11y", label: "11 años", short: "11a (40 kg)", group: "Pubertad / Cierre pediátrico (11 a 14 años)", weight: 40.0, formula: "Fórmula APLS/ERC: (3×11)+7 = 40 kg" },
+    { id: "12y", label: "12 años", short: "12a (44 kg)", group: "Pubertad / Cierre pediátrico (11 a 14 años)", weight: 44.0, formula: "Fórmula APLS/ERC: (3×12)+7 ~44 kg" },
+    { id: "13y", label: "13 años (pubertad temprana)", short: "13a (48 kg)", group: "Pubertad / Cierre pediátrico (11 a 14 años)", weight: 48.0, formula: "Percentil 50 pubertad (~48 kg)" },
+    { id: "14y", label: "14 años (pubertad / cierre pediátrico)", short: "14a (52 kg)", group: "Pubertad / Cierre pediátrico (11 a 14 años)", weight: 52.0, formula: "Percentil 50 pubertad (~52 kg) · Cierre pediátrico" }
+];
+
+const quickChipIds = ["rn", "6m", "12m", "2y", "4y", "6y", "8y", "10y", "12y", "14y"];
+let currentEstimatedItem = null;
+
+// Poblar selector con optgroups
+const ageGroups = {};
+ageWeightData.forEach(item => {
+    if (!ageGroups[item.group]) ageGroups[item.group] = [];
+    ageGroups[item.group].push(item);
+});
+
+for (const groupTitle in ageGroups) {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = groupTitle;
+    ageGroups[groupTitle].forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = `${item.label} → ${item.weight} kg (${item.formula})`;
+        optgroup.appendChild(opt);
+    });
+    estimatorSelect.appendChild(optgroup);
+}
+
+// Poblar chips rápidos
+quickChipIds.forEach(id => {
+    const item = ageWeightData.find(x => x.id === id);
+    if (!item) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chip-btn';
+    btn.dataset.id = item.id;
+    btn.textContent = item.short;
+    btn.title = `${item.label}: ${item.weight} kg (${item.formula})`;
+    btn.addEventListener('click', () => applyEstimatedWeight(item));
+    quickChipsContainer.appendChild(btn);
+});
+
+function applyEstimatedWeight(item) {
+    currentEstimatedItem = item;
+    weightInput.value = item.weight;
+    estimatorSelect.value = item.id;
+
+    document.querySelectorAll('.chip-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.id === item.id);
+    });
+
+    estimatedBadgeText.innerHTML = `🩺 Peso estimado: <strong>${item.label}</strong> → <strong>${item.weight} kg</strong> <span style="opacity:0.8; font-size:0.69rem;">(${item.formula})</span>`;
+    estimatedBadge.classList.add('show');
+
+    calculate();
+}
+
+function clearEstimatedWeight() {
+    currentEstimatedItem = null;
+    weightInput.value = '';
+    estimatorSelect.value = '';
+    document.querySelectorAll('.chip-btn').forEach(btn => btn.classList.remove('active'));
+    estimatedBadge.classList.remove('show');
+    estimatedBadgeText.innerHTML = '';
+    calculate();
+}
+
+btnToggleEstimator.addEventListener('click', () => {
+    const isOpen = estimatorPanel.classList.toggle('open');
+    btnToggleEstimator.classList.toggle('active', isOpen);
+});
+
+estimatorSelect.addEventListener('change', () => {
+    const selId = estimatorSelect.value;
+    if (!selId) return;
+    const item = ageWeightData.find(x => x.id === selId);
+    if (item) applyEstimatedWeight(item);
+});
+
+btnClearEstimate.addEventListener('click', clearEstimatedWeight);
+
+// Eventos de entrada
+weightInput.addEventListener('input', () => {
+    const val = parseFloat(weightInput.value);
+    if (isNaN(val) || val <= 0) {
+        if (currentEstimatedItem) clearEstimatedWeight();
+    } else if (currentEstimatedItem) {
+        if (val !== currentEstimatedItem.weight) {
+            estimatedBadgeText.innerHTML = `✏ Peso ajustado: <strong>${val} kg</strong> <span style="opacity:0.8; font-size:0.69rem;">(base estimada: ${currentEstimatedItem.short})</span>`;
+            estimatorSelect.value = '';
+            document.querySelectorAll('.chip-btn').forEach(btn => btn.classList.remove('active'));
+        } else {
+            estimatedBadgeText.innerHTML = `🩺 Peso estimado: <strong>${currentEstimatedItem.label}</strong> → <strong>${currentEstimatedItem.weight} kg</strong> <span style="opacity:0.8; font-size:0.69rem;">(${currentEstimatedItem.formula})</span>`;
+            estimatorSelect.value = currentEstimatedItem.id;
+            document.querySelectorAll('.chip-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.id === currentEstimatedItem.id);
+            });
+        }
+    }
+    calculate();
+});
+
 doseInput.addEventListener('input', calculate);
 
 // ============================================================
